@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  vape-manager:
+    build: .
+    container_name: vape-juice-manager
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./vape_data.json:/app/vape_data.json
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production

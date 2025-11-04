@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vape Juice Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { 
+            color: white; 
+            margin-bottom: 30px; 
+            font-size: 36px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        h2 { 
+            color: #2d3748; 
+            margin-bottom: 20px; 
+            font-size: 20px;
+            border-bottom: 3px solid #2c5364;
+            padding-bottom: 10px;
+        }
+        h3 { 
+            color: #4a5568; 
+            margin: 15px 0 5px 0; 
+            font-size: 13px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 5px 0; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { 
+            outline: none; 
+            border-color: #2c5364;
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            type: button;
+        }
+        button { background: #2c5364; color: white; }
+        button:hover { background: #203a43; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(44, 83, 100, 0.3); }
+        button:active { transform: translateY(0); }
+        
+        .inventory-item { 
+            padding: 12px; 
+            border-bottom: 1px solid #e2e8f0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .inventory-item:hover { background: #f7fafc; }
+        .inventory-item:last-child { border-bottom: none; }
+        .inventory-item.low-stock { background: #fff5f5; border-left: 3px solid #f56565; }
+        .inventory-item button { 
+            width: auto; 
+            padding: 6px 12px; 
+            margin: 0 0 0 5px; 
+            background: #f56565; 
+            font-size: 12px;
+        }
+        .inventory-item button:hover { background: #e53e3e; }
+        .inventory-item button.load-btn { background: #48bb78; }
+        .inventory-item button.load-btn:hover { background: #38a169; }
+        
+        .recipe-output { 
+            background: #f7fafc; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+            font-family: Arial, sans-serif; 
+            white-space: normal;
+            border: 2px solid #e2e8f0;
+        }
+        .recipe-output table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 10px 0;
+        }
+        .recipe-output th { 
+            background: #2c5364; 
+            color: white;
+            padding: 10px; 
+            text-align: left; 
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        .recipe-output td { 
+            padding: 10px; 
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .recipe-output tr:hover { background: #edf2f7; }
+        .recipe-output .header { 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            font-size: 16px;
+            color: #2d3748;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #2c5364;
+        }
+        .recipe-output .section { 
+            margin-top: 20px; 
+            font-weight: 600; 
+            color: #2d3748;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .flavor-input { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr auto; 
+            gap: 10px; 
+            margin: 8px 0; 
+            align-items: center;
+        }
+        .flavor-input button { 
+            width: auto; 
+            padding: 12px 16px;
+            background: #f56565;
+        }
+        .flavor-input button:hover { background: #e53e3e; }
+        
+        .btn-secondary { background: #718096 !important; }
+        .btn-secondary:hover { background: #4a5568 !important; }
+        
+        .collapsible { cursor: pointer; user-select: none; }
+        .collapsible:hover { opacity: 0.8; }
+        .collapsible::before { content: '▼ '; font-size: 12px; }
+        .collapsible.collapsed::before { content: '▶ '; }
+        .collapsible-content { max-height: 400px; overflow-y: auto; }
+        .collapsible-content.hidden { display: none; }
+        
+        .empty-state {
+            padding: 20px;
+            text-align: center;
+            color: #a0aec0;
+            font-style: italic;
+        }
+        
+        .full-width { grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+    <form autocomplete="off">
+    <div class="container">
+        <h1>🧪 Vape Juice Recipe Manager</h1>
+        
+        <div class="grid">
+            <div class="card">
+                <h2 class="collapsible" onclick="toggleSection('inventory-content')">📦 Inventory</h2>
+                <div id="inventory-content" class="collapsible-content">
+                <div id="inventory">
+                    <div><strong>Nicotine Bases:</strong></div>
+                    <div id="nicotine-list"></div>
+                    <div style="margin-top: 20px;"><strong>Flavors:</strong></div>
+                    <div id="flavor-list"></div>
+                </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="collapsible" onclick="toggleSection('add-inventory-content')">➕ Add to Inventory</h2>
+                <div id="add-inventory-content" class="collapsible-content">
+                <h3>Flavor name</h3>
+                <input type="text" id="flavor-name" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                <h3>Base type</h3>
+                <select id="flavor-base">
+                    <option value="pg">PG-based</option>
+                    <option value="vg">VG-based</option>
+                </select>
+                <h3>Amount (grams)</h3>
+                <input type="number" id="flavor-amount" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" placeholder="Optional">
+                <button type="button" onclick="addFlavor()">Add Flavor</button>
+                
+                <h3 style="margin-top: 20px;">Import Flavors (JSON)</h3>
+                <textarea id="flavor-import" rows="3" autocomplete="off" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: monospace; font-size: 12px;" placeholder='{"Flavor Name": "pg", "Another": "vg"}'></textarea>
+                <button type="button" onclick="importFlavors()">Import Flavors</button>
+                
+                <h3 style="margin-top: 20px;">Nicotine strength (mg/ml)</h3>
+                <input type="text" id="nic-strength" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                <h3>PG %</h3>
+                <input type="number" id="nic-pg" step="1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                <h3>VG %</h3>
+                <input type="number" id="nic-vg" step="1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                <button type="button" onclick="addNicotine()">Add Nicotine Base</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2>🧮 Recipe Calculator</h2>
+            <div class="grid">
+                <div>
+                    <h3>Total batch size (ml)</h3>
+                    <input type="number" id="total-ml" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <h3>Target nicotine (mg/ml)</h3>
+                    <input type="number" id="target-nic" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <h3>Target PG ratio (%)</h3>
+                    <input type="number" id="target-pg" step="1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <h3>Steep time</h3>
+                    <input type="text" id="steep-time" placeholder="e.g. 2 weeks, SnV" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <h3>Nicotine base</h3>
+                    <select id="nic-base">
+                        <option value="">Select nicotine base</option>
+                    </select>
+                    <h3>Flavors</h3>
+                    <div id="flavor-inputs">
+                        <div class="flavor-input">
+                            <select class="flavor-select">
+                                <option value="">Select flavor</option>
+                            </select>
+                            <input type="number" class="flavor-pct" placeholder="%" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addFlavorInput()">+ Add Flavor</button>
+                    <button type="button" onclick="calculateRecipe()">Calculate Recipe</button>
+                    <h3 style="margin-top: 15px;">AI Recipe Suggestion</h3>
+                    <input type="text" id="ai-prompt" placeholder="e.g. berry flavor, use grape, creamy dessert" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <button type="button" onclick="getAISuggestion()" style="background: #9f7aea;">🤖 AI Suggest Recipe</button>
+                    <button type="button" onclick="clearRecipe()" class="btn-secondary">Clear Recipe</button>
+                </div>
+                <div>
+                    <h3>Recipe Output</h3>
+                    <div id="recipe-output" class="recipe-output">Recipe will appear here...</div>
+                    <h3>Recipe name</h3>
+                    <input type="text" id="recipe-name" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <button type="button" onclick="saveRecipe()">Save Recipe</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2 class="collapsible collapsed" onclick="toggleSection('shots-content')">🎯 Flavor Shots (Bulk Flavor Concentrates)</h2>
+            <div id="shots-content" class="collapsible-content hidden">
+            <div class="grid">
+                <div>
+                    <h3>Shot name</h3>
+                    <input type="text" id="shot-name" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <h3>Total volume (ml)</h3>
+                    <input type="number" id="shot-ml" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <h3>Flavors</h3>
+                    <div id="shot-flavor-inputs">
+                        <div class="flavor-input">
+                            <select class="shot-flavor-select">
+                                <option value="">Select flavor</option>
+                            </select>
+                            <input type="number" class="shot-flavor-pct" placeholder="%" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addShotFlavorInput()">+ Add Flavor</button>
+                    <button type="button" onclick="calculateShot()">Calculate Shot</button>
+                    <button type="button" onclick="clearShot()" class="btn-secondary">Clear</button>
+                </div>
+                <div>
+                    <h3>Shot Output</h3>
+                    <div id="shot-output" class="recipe-output">Shot recipe will appear here...</div>
+                    <button type="button" onclick="saveShot()">Save as Flavor</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2 class="collapsible" onclick="toggleSection('recipes-content')">📋 Saved Recipes</h2>
+            <div id="recipes-content" class="collapsible-content">
+            <div style="margin-bottom: 15px;">
+                <h3>Import Recipe (JSON)</h3>
+                <textarea id="recipe-import" rows="4" autocomplete="off" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: monospace; font-size: 12px;" placeholder='{"total_ml": 60, "target_nic": 3, "target_pg": 30, "nic_base": "100", "flavors": {"Flavor": 5}}'></textarea>
+                <button type="button" onclick="importRecipe()">Import Recipe</button>
+            </div>
+            <div id="saved-recipes"></div>
+            </div>
+        </div>
+    </div>
+    </form>
+
+    <script>
+        let currentRecipe = null;
+        let inventoryData = null;
+        const DENSITY = {pg: 1.036, vg: 1.26};
+
+        function toggleSection(id) {
+            const content = document.getElementById(id);
+            const header = content.previousElementSibling;
+            content.classList.toggle('hidden');
+            header.classList.toggle('collapsed');
+        }
+
+        async function loadInventory() {
+            const res = await fetch('/api/inventory');
+            inventoryData = await res.json();
+            
+            const nicList = document.getElementById('nicotine-list');
+            nicList.innerHTML = Object.entries(inventoryData.nicotine).map(([str, info]) => 
+                `<div class="inventory-item">
+                    <span>${str}mg/ml</span>
+                    <span>${info.pg}/${info.vg} PG/VG</span>
+                    <button onclick="deleteNicotine('${str}')">✕</button>
+                </div>`
+            ).join('') || '<div class="empty-state">No nicotine bases added yet</div>';
+            
+            const flavorList = document.getElementById('flavor-list');
+            const flavorEntries = Object.entries(inventoryData.flavors).map(([name, info]) => {
+                const flavorInfo = typeof info === 'string' ? {base: info, amount: 0} : info;
+                const lowStock = flavorInfo.amount > 0 && flavorInfo.amount < 5;
+                return {name, flavorInfo, lowStock};
+            });
+            
+            // Sort: low stock first, then by name
+            flavorEntries.sort((a, b) => {
+                if (a.lowStock && !b.lowStock) return -1;
+                if (!a.lowStock && b.lowStock) return 1;
+                return a.name.localeCompare(b.name);
+            });
+            
+            flavorList.innerHTML = flavorEntries.map(({name, flavorInfo, lowStock}) => 
+                `<div class="inventory-item ${lowStock ? 'low-stock' : ''}">
+                    <span>${name} (${flavorInfo.base.toUpperCase()}) - ${flavorInfo.amount.toFixed(1)}g</span>
+                    <button type="button" onclick="deleteFlavor('${name.replace(/'/g, "\\'")}')">✕</button>
+                </div>`
+            ).join('') || '<div class="empty-state">No flavors added yet</div>';
+            
+            const nicBase = document.getElementById('nic-base');
+            nicBase.innerHTML = '<option value="">Select nicotine base</option>' + 
+                Object.keys(inventoryData.nicotine).map(str => 
+                    `<option value="${str}">${str}mg/ml (${inventoryData.nicotine[str].pg}/${inventoryData.nicotine[str].vg})</option>`
+                ).join('');
+            
+            updateFlavorSelects();
+            updateShotFlavorSelects();
+            
+            const savedRecipes = document.getElementById('saved-recipes');
+            savedRecipes.innerHTML = Object.entries(inventoryData.recipes).map(([name, recipe]) => 
+                `<div class="inventory-item">
+                    <span><strong>${name}</strong> - ${recipe.total_ml}ml @ ${recipe.target_nic}mg/ml (${recipe.pg_vg}) ${recipe.steep_time ? '| Steep: ' + recipe.steep_time : ''} | Mixed: ${recipe.mixed_count || 0}x</span>
+                    <div>
+                        <button type="button" class="load-btn" onclick="loadRecipe('${name.replace(/'/g, "\\'")}')">Load</button>
+                        <button type="button" style="background: #4299e1;" onclick="incrementMixed('${name.replace(/'/g, "\\'")}')">+1 Mix</button>
+                        <button type="button" onclick="deleteRecipe('${name.replace(/'/g, "\\'")}')">✕</button>
+                    </div>
+                </div>`
+            ).join('') || '<div class="empty-state">No saved recipes yet</div>';
+        }
+
+        function updateFlavorSelects() {
+            if (!inventoryData) return;
+            const selects = document.querySelectorAll('.flavor-select');
+            const options = '<option value="">Select flavor</option>' + 
+                Object.keys(inventoryData.flavors).map(name => `<option value="${name}">${name}</option>`).join('');
+            selects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = options;
+                select.value = currentValue;
+            });
+        }
+
+        function clearRecipe() {
+            document.getElementById('total-ml').value = '';
+            document.getElementById('target-nic').value = '';
+            document.getElementById('target-pg').value = '';
+            document.getElementById('steep-time').value = '';
+            document.getElementById('nic-base').value = '';
+            document.getElementById('flavor-inputs').innerHTML = `
+                <div class="flavor-input">
+                    <select class="flavor-select">
+                        <option value="">Select flavor</option>
+                    </select>
+                    <input type="number" class="flavor-pct" placeholder="%" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                </div>
+            `;
+            updateFlavorSelects();
+            document.getElementById('recipe-output').innerHTML = 'Recipe will appear here...';
+            currentRecipe = null;
+        }
+
+        async function addFlavor() {
+            const name = document.getElementById('flavor-name').value.trim();
+            const base = document.getElementById('flavor-base').value;
+            const amount = parseFloat(document.getElementById('flavor-amount').value) || 0;
+            if (!name) return alert('Enter flavor name');
+            
+            await fetch('/api/flavor', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, base, amount})
+            });
+            
+            document.getElementById('flavor-name').value = '';
+            document.getElementById('flavor-amount').value = '';
+            loadInventory();
+        }
+
+        async function deleteFlavor(name) {
+            if (!confirm(`Delete ${name}?`)) return;
+            await fetch('/api/flavor', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            loadInventory();
+        }
+
+        async function addNicotine() {
+            const strength = document.getElementById('nic-strength').value.trim();
+            const pg = parseFloat(document.getElementById('nic-pg').value);
+            const vg = parseFloat(document.getElementById('nic-vg').value);
+            if (!strength || isNaN(pg) || isNaN(vg) || pg + vg !== 100) return alert('Fill all fields (PG+VG must equal 100)');
+            
+            await fetch('/api/nicotine', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({strength, pg, vg})
+            });
+            
+            document.getElementById('nic-strength').value = '';
+            document.getElementById('nic-pg').value = '';
+            document.getElementById('nic-vg').value = '';
+            loadInventory();
+        }
+
+        async function deleteNicotine(strength) {
+            if (!confirm(`Delete ${strength}mg/ml nicotine base?`)) return;
+            await fetch('/api/nicotine', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({strength})
+            });
+            loadInventory();
+        }
+
+        function addFlavorInput() {
+            if (!inventoryData) return;
+            const container = document.getElementById('flavor-inputs');
+            const div = document.createElement('div');
+            div.className = 'flavor-input';
+            const options = '<option value="">Select flavor</option>' + 
+                Object.keys(inventoryData.flavors).map(name => `<option value="${name}">${name}</option>`).join('');
+            div.innerHTML = `
+                <select class="flavor-select">${options}</select>
+                <input type="number" class="flavor-pct" placeholder="%" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        async function calculateRecipe() {
+            console.log('calculateRecipe called');
+            const totalMl = parseFloat(document.getElementById('total-ml').value);
+            const targetNic = parseFloat(document.getElementById('target-nic').value);
+            const targetPg = parseFloat(document.getElementById('target-pg').value);
+            const steepTime = document.getElementById('steep-time').value.trim() || 'Not specified';
+            const nicStrength = document.getElementById('nic-base').value;
+            
+            console.log('Values:', {totalMl, targetNic, targetPg, steepTime, nicStrength});
+            
+            if (!totalMl || isNaN(targetNic) || !targetPg || !nicStrength) {
+                console.log('Missing fields');
+                return alert('Fill all required fields');
+            }
+            
+            const nicInfo = inventoryData.nicotine[nicStrength];
+            
+            const nicMl = (targetNic * totalMl) / parseFloat(nicStrength);
+            const nicPgMl = nicMl * (nicInfo.pg / 100);
+            const nicVgMl = nicMl * (nicInfo.vg / 100);
+            
+            // Calculate nicotine density based on its PG/VG ratio
+            const nicDensity = (DENSITY.pg * nicInfo.pg / 100) + (DENSITY.vg * nicInfo.vg / 100);
+            const nicWeight = nicMl * nicDensity;
+            
+            const flavors = {};
+            let totalFlavorPct = 0;
+            let flavorPgMl = 0;
+            let flavorVgMl = 0;
+            
+            document.querySelectorAll('#flavor-inputs .flavor-input').forEach(div => {
+                const name = div.querySelector('.flavor-select').value;
+                const pct = parseFloat(div.querySelector('.flavor-pct').value) || 0;
+                if (name && pct > 0) {
+                    flavors[name] = pct;
+                    totalFlavorPct += pct;
+                    const flavorMl = (pct / 100) * totalMl;
+                    const flavorInfo = typeof inventoryData.flavors[name] === 'string' 
+                        ? {base: inventoryData.flavors[name], amount: 0}
+                        : inventoryData.flavors[name];
+                    const flavorBase = flavorInfo.base;
+                    if (flavorBase === 'vg') {
+                        flavorVgMl += flavorMl;
+                    } else {
+                        flavorPgMl += flavorMl;
+                    }
+                }
+            });
+            
+            const targetPgMl = (targetPg / 100) * totalMl;
+            const targetVgMl = ((100 - targetPg) / 100) * totalMl;
+            
+            const addPgMl = targetPgMl - nicPgMl - flavorPgMl;
+            const addVgMl = targetVgMl - nicVgMl - flavorVgMl;
+            
+            const flavorPgWeight = flavorPgMl * DENSITY.pg;
+            const flavorVgWeight = flavorVgMl * DENSITY.vg;
+            const pgWeight = addPgMl * DENSITY.pg;
+            const vgWeight = addVgMl * DENSITY.vg;
+            const totalWeight = nicWeight + flavorPgWeight + flavorVgWeight + pgWeight + vgWeight;
+            
+            let output = `<div class="header">Batch: ${totalMl}ml (${totalWeight.toFixed(2)}g) | Target: ${targetNic}mg/ml | Ratio: ${targetPg}/${100-targetPg} PG/VG<br>Steep: ${steepTime}</div>`;
+            
+            output += `<div class="section">Nicotine Base (${nicStrength}mg/ml ${nicInfo.pg}/${nicInfo.vg})</div>`;
+            output += `<table><tr><th>Ingredient</th><th>ml</th><th>grams</th></tr>`;
+            output += `<tr><td>Nicotine</td><td>${nicMl.toFixed(2)}</td><td>${nicWeight.toFixed(2)}</td></tr></table>`;
+            
+            if (Object.keys(flavors).length > 0) {
+                output += `<div class="section">Flavors</div>`;
+                output += `<table><tr><th>Flavor</th><th>%</th><th>ml</th><th>grams</th></tr>`;
+                Object.entries(flavors).forEach(([name, pct]) => {
+                    const ml = (pct/100)*totalMl;
+                    const base = inventoryData.flavors[name];
+                    const weight = ml * (base === 'vg' ? DENSITY.vg : DENSITY.pg);
+                    output += `<tr><td>${name}</td><td>${pct}%</td><td>${ml.toFixed(2)}</td><td>${weight.toFixed(2)}</td></tr>`;
+                });
+                output += `</table>`;
+            }
+            
+            output += `<div class="section">Base</div>`;
+            output += `<table><tr><th>Ingredient</th><th>ml</th><th>grams</th></tr>`;
+            output += `<tr><td>PG</td><td>${addPgMl.toFixed(2)}</td><td>${pgWeight.toFixed(2)}</td></tr>`;
+            output += `<tr><td>VG</td><td>${addVgMl.toFixed(2)}</td><td>${vgWeight.toFixed(2)}</td></tr>`;
+            output += `<tr style="font-weight: bold; background: #e9ecef;"><td>TOTAL</td><td>${totalMl.toFixed(2)}</td><td>${totalWeight.toFixed(2)}</td></tr>`;
+            output += `</table>`;
+            
+            document.getElementById('recipe-output').innerHTML = output;
+            
+            currentRecipe = {
+                total_ml: totalMl,
+                target_nic: targetNic,
+                pg_vg: `${targetPg}/${100-targetPg}`,
+                steep_time: steepTime,
+                mixed_count: 0,
+                nicotine: {strength: nicStrength, ml: nicMl, weight: nicWeight},
+                flavors: flavors,
+                pg: {ml: addPgMl, weight: pgWeight},
+                vg: {ml: addVgMl, weight: vgWeight},
+                total_weight: totalWeight
+            };
+        }
+
+        async function saveRecipe() {
+            const name = document.getElementById('recipe-name').value.trim();
+            if (!name || !currentRecipe) return alert('Calculate a recipe first and enter a name');
+            
+            // Preserve mixed_count if updating existing recipe
+            if (inventoryData.recipes[name]) {
+                currentRecipe.mixed_count = inventoryData.recipes[name].mixed_count || 0;
+            }
+            
+            await fetch('/api/recipe', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, ...currentRecipe})
+            });
+            
+            document.getElementById('recipe-name').value = '';
+            loadInventory();
+            alert('Recipe saved!');
+        }
+
+        async function loadRecipe(name) {
+            const recipe = inventoryData.recipes[name];
+            if (!recipe) return;
+            
+            document.getElementById('total-ml').value = recipe.total_ml;
+            document.getElementById('target-nic').value = recipe.target_nic;
+            const [pg, vg] = recipe.pg_vg.split('/');
+            document.getElementById('target-pg').value = pg;
+            document.getElementById('steep-time').value = recipe.steep_time || '';
+            document.getElementById('nic-base').value = recipe.nicotine.strength;
+            document.getElementById('recipe-name').value = name;
+            
+            // Clear and rebuild flavor inputs
+            const container = document.getElementById('flavor-inputs');
+            container.innerHTML = '';
+            
+            Object.entries(recipe.flavors).forEach(([flavorName, pct]) => {
+                const div = document.createElement('div');
+                div.className = 'flavor-input';
+                const options = '<option value="">Select flavor</option>' + 
+                    Object.keys(inventoryData.flavors).map(n => 
+                        `<option value="${n}" ${n === flavorName ? 'selected' : ''}>${n}</option>`
+                    ).join('');
+                div.innerHTML = `
+                    <select class="flavor-select">${options}</select>
+                    <input type="number" class="flavor-pct" placeholder="%" step="0.1" value="${pct}" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    <button type="button" onclick="this.parentElement.remove()">✕</button>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Recalculate to show output
+            calculateRecipe();
+        }
+
+        async function deleteRecipe(name) {
+            if (!confirm(`Delete recipe "${name}"?`)) return;
+            await fetch('/api/recipe', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            loadInventory();
+        }
+
+        async function getAISuggestion() {
+            if (!inventoryData || Object.keys(inventoryData.flavors).length === 0) {
+                return alert('Add some flavors to your inventory first!');
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🤖 Thinking...';
+            
+            try {
+                const flavors = Object.keys(inventoryData.flavors);
+                const userPrompt = document.getElementById('ai-prompt').value.trim();
+                
+                const response = await fetch('/api/ai/suggest', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'recipe',
+                        flavors: flavors,
+                        prompt: userPrompt
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.recipe) {
+                    const recipe = result.recipe;
+                    
+                    document.getElementById('total-ml').value = recipe.total_ml || 60;
+                    document.getElementById('target-nic').value = recipe.target_nic || 3;
+                    document.getElementById('target-pg').value = recipe.target_pg || 30;
+                    document.getElementById('steep-time').value = recipe.steep_time || '';
+                    document.getElementById('recipe-name').value = recipe.name || 'AI Suggested Recipe';
+                    
+                    const container = document.getElementById('flavor-inputs');
+                    container.innerHTML = '';
+                    
+                    if (recipe.flavors) {
+                        Object.entries(recipe.flavors).forEach(([flavorName, pct]) => {
+                            const div = document.createElement('div');
+                            div.className = 'flavor-input';
+                            const options = '<option value="">Select flavor</option>' + 
+                                Object.keys(inventoryData.flavors).map(n => 
+                                    `<option value="${n}" ${n === flavorName ? 'selected' : ''}>${n}</option>`
+                                ).join('');
+                            div.innerHTML = `
+                                <select class="flavor-select">${options}</select>
+                                <input type="number" class="flavor-pct" placeholder="%" step="0.1" value="${pct}" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                                <button type="button" onclick="this.parentElement.remove()">✕</button>
+                            `;
+                            container.appendChild(div);
+                        });
+                    }
+                    
+                    alert('AI recipe loaded! Review and click Calculate Recipe.');
+                } else {
+                    alert('AI Error: ' + (result.error || 'Unknown error'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🤖 AI Suggest Recipe';
+            }
+        }
+
+        async function incrementMixed(name) {
+            const recipe = inventoryData.recipes[name];
+            if (!recipe) return;
+            
+            recipe.mixed_count = (recipe.mixed_count || 0) + 1;
+            
+            // Deduct flavor amounts
+            Object.entries(recipe.flavors).forEach(([flavorName, pct]) => {
+                if (inventoryData.flavors[flavorName]) {
+                    const flavorInfo = typeof inventoryData.flavors[flavorName] === 'string'
+                        ? {base: inventoryData.flavors[flavorName], amount: 0}
+                        : inventoryData.flavors[flavorName];
+                    
+                    const ml = (pct / 100) * recipe.total_ml;
+                    const weight = ml * (flavorInfo.base === 'vg' ? DENSITY.vg : DENSITY.pg);
+                    flavorInfo.amount = Math.max(0, flavorInfo.amount - weight);
+                    
+                    // Update in inventory
+                    inventoryData.flavors[flavorName] = flavorInfo;
+                }
+            });
+            
+            // Save updated inventory
+            await fetch('/api/inventory/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(inventoryData)
+            });
+            
+            await fetch('/api/recipe', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, ...recipe})
+            });
+            
+            loadInventory();
+        }
+
+        async function importFlavors() {
+            const text = document.getElementById('flavor-import').value.trim();
+            if (!text) return alert('Paste JSON into the text area');
+            
+            try {
+                const flavors = JSON.parse(text);
+                
+                const response = await fetch('/api/flavors/batch', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(flavors)
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('flavor-import').value = '';
+                loadInventory();
+                alert(`Imported ${result.count} flavors`);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function importRecipe() {
+            const text = document.getElementById('recipe-import').value.trim();
+            if (!text) return alert('Paste JSON into the text area');
+            
+            try {
+                const recipe = JSON.parse(text);
+                
+                document.getElementById('total-ml').value = recipe.total_ml || '';
+                document.getElementById('target-nic').value = recipe.target_nic || '';
+                document.getElementById('target-pg').value = recipe.target_pg || '';
+                document.getElementById('steep-time').value = recipe.steep_time || '';
+                document.getElementById('nic-base').value = recipe.nic_base || '';
+                
+                const container = document.getElementById('flavor-inputs');
+                container.innerHTML = '';
+                
+                if (recipe.flavors) {
+                    Object.entries(recipe.flavors).forEach(([flavorName, pct]) => {
+                        const div = document.createElement('div');
+                        div.className = 'flavor-input';
+                        const options = '<option value="">Select flavor</option>' + 
+                            Object.keys(inventoryData.flavors).map(n => 
+                                `<option value="${n}" ${n === flavorName ? 'selected' : ''}>${n}</option>`
+                            ).join('');
+                        div.innerHTML = `
+                            <select class="flavor-select">${options}</select>
+                            <input type="number" class="flavor-pct" placeholder="%" step="0.1" value="${pct}" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                            <button onclick="this.parentElement.remove()">✕</button>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+                
+                document.getElementById('recipe-import').value = '';
+                alert('Recipe imported! Click "Calculate Recipe" to see results.');
+            } catch (e) {
+                alert('Invalid JSON: ' + e.message);
+            }
+        }
+
+        function addShotFlavorInput() {
+            if (!inventoryData) return;
+            const container = document.getElementById('shot-flavor-inputs');
+            const div = document.createElement('div');
+            div.className = 'flavor-input';
+            const options = '<option value="">Select flavor</option>' + 
+                Object.keys(inventoryData.flavors).map(name => `<option value="${name}">${name}</option>`).join('');
+            div.innerHTML = `
+                <select class="shot-flavor-select">${options}</select>
+                <input type="number" class="shot-flavor-pct" placeholder="%" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function calculateShot() {
+            const totalMl = parseFloat(document.getElementById('shot-ml').value);
+            if (!totalMl) return alert('Enter total volume');
+            
+            const flavors = {};
+            let totalPct = 0;
+            
+            document.querySelectorAll('#shot-flavor-inputs .flavor-input').forEach(div => {
+                const name = div.querySelector('.shot-flavor-select').value;
+                const pct = parseFloat(div.querySelector('.shot-flavor-pct').value) || 0;
+                if (name && pct > 0) {
+                    flavors[name] = pct;
+                    totalPct += pct;
+                }
+            });
+            
+            if (totalPct !== 100) return alert('Flavor percentages must equal 100%');
+            
+            let output = `<div class="header">Flavor Shot: ${totalMl}ml</div>`;
+            output += `<div class="section">Ingredients</div>`;
+            output += `<table><tr><th>Flavor</th><th>%</th><th>ml</th><th>grams</th></tr>`;
+            
+            Object.entries(flavors).forEach(([name, pct]) => {
+                const ml = (pct / 100) * totalMl;
+                const flavorInfo = typeof inventoryData.flavors[name] === 'string'
+                    ? {base: inventoryData.flavors[name], amount: 0}
+                    : inventoryData.flavors[name];
+                const base = flavorInfo.base;
+                const weight = ml * (base === 'vg' ? DENSITY.vg : DENSITY.pg);
+                output += `<tr><td>${name}</td><td>${pct}%</td><td>${ml.toFixed(2)}</td><td>${weight.toFixed(2)}</td></tr>`;
+            });
+            
+            output += `</table>`;
+            document.getElementById('shot-output').innerHTML = output;
+        }
+
+        async function saveShot() {
+            const name = document.getElementById('shot-name').value.trim();
+            if (!name) return alert('Enter shot name');
+            
+            const flavors = {};
+            document.querySelectorAll('#shot-flavor-inputs .flavor-input').forEach(div => {
+                const flavorName = div.querySelector('.shot-flavor-select').value;
+                const pct = parseFloat(div.querySelector('.shot-flavor-pct').value) || 0;
+                if (flavorName && pct > 0) {
+                    flavors[flavorName] = pct;
+                }
+            });
+            
+            if (Object.keys(flavors).length === 0) return alert('Add flavors to the shot');
+            
+            const allVg = Object.keys(flavors).every(f => {
+                const flavorInfo = typeof inventoryData.flavors[f] === 'string'
+                    ? {base: inventoryData.flavors[f], amount: 0}
+                    : inventoryData.flavors[f];
+                return flavorInfo.base === 'vg';
+            });
+            const base = allVg ? 'vg' : 'pg';
+            
+            await fetch('/api/flavor', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, base, amount: 0})
+            });
+            
+            loadInventory();
+            alert(`Saved "${name}" as a ${base.toUpperCase()}-based flavor`);
+        }
+
+        function clearShot() {
+            document.getElementById('shot-name').value = '';
+            document.getElementById('shot-ml').value = '';
+            document.getElementById('shot-flavor-inputs').innerHTML = `
+                <div class="flavor-input">
+                    <select class="shot-flavor-select">
+                        <option value="">Select flavor</option>
+                    </select>
+                    <input type="number" class="shot-flavor-pct" placeholder="%" step="0.1" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                </div>
+            `;
+            updateShotFlavorSelects();
+            document.getElementById('shot-output').innerHTML = 'Shot recipe will appear here...';
+        }
+
+        function updateShotFlavorSelects() {
+            if (!inventoryData) return;
+            const selects = document.querySelectorAll('.shot-flavor-select');
+            const options = '<option value="">Select flavor</option>' + 
+                Object.keys(inventoryData.flavors).map(name => `<option value="${name}">${name}</option>`).join('');
+            selects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = options;
+                select.value = currentValue;
+            });
+        }
+
+        loadInventory();
+    </script>
+</body>
+</html>
