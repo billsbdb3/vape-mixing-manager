@@ -7,8 +7,10 @@ from google import genai
 app = Flask(__name__)
 DATA_FILE = "vape_data.json"
 
-# Configure Gemini
-os.environ['GOOGLE_API_KEY'] = "AIzaSyBqurpTCR5Tj_X-QwXUAzy0zQP2hcB7Nc0"
+# Configure Gemini - API key should be set as environment variable
+# Set with: export GOOGLE_API_KEY="your-key-here"
+if not os.environ.get('GOOGLE_API_KEY'):
+    print("WARNING: GOOGLE_API_KEY environment variable not set. AI features will not work.")
 client = genai.Client()
 
 def load_data():

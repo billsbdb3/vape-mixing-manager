@@ -5,3 +5,4 @@ __pycache__/
 .Python
 vape_data.json
 .DS_Store
+.env

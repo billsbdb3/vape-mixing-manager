@@ -22,10 +22,13 @@ services:
     restart: unless-stopped
     environment:
       - FLASK_ENV=production
+      - GOOGLE_API_KEY=your-google-api-key-here
 
 volumes:
   vape-data:
 ```
+
+**Important:** Replace `your-google-api-key-here` with your actual Google API key for AI features to work.
 
 4. **Click "Deploy the stack"**
 

@@ -27,10 +27,16 @@ git clone https://github.com/billsbdb3/vape-mixing-manager.git
 cd vape-mixing-manager
 ```
 
-2. **Update API key** (optional - for AI features):
-Edit `vape_app.py` and replace the API key on line 9:
-```python
-os.environ['GOOGLE_API_KEY'] = "your-api-key-here"
+2. **Set up environment variables:**
+```bash
+cp .env.example .env
+nano .env  # Add your Google API key
+```
+
+Or set directly in docker-compose.yml:
+```yaml
+environment:
+  - GOOGLE_API_KEY=your-api-key-here
 ```
 
 3. **Start the application:**

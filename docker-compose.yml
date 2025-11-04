@@ -11,3 +11,4 @@ services:
     restart: unless-stopped
     environment:
       - FLASK_ENV=production
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
