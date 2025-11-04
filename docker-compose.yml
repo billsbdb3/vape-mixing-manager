@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   vape-manager:
-    build: .
+    image: ghcr.io/billsbdb3/vape-mixing-manager:latest
     container_name: vape-juice-manager
     ports:
       - "5001:5001"
